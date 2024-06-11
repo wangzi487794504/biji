@@ -1,0 +1,118 @@
+##### SpringBoot入门
+
+*  Spring Boot 是目前流行的微服务框架 倡导 约定优先于配置” 。==目的是用来简化新 Spring 应用的初 始化搭建以及开发过程==。 Spring Boot 提供了很多核心的功 能，比如自动化配置 starter（启动器） 简化 Maven 配置、内嵌 Servlet 容器、应用监控等功能， 让我们可以快速构建企业级应用程序。 
+
+*  ==约定优于配置：==Spring Boot 定义了常用类，包的位置和结构，默认的设置。代码不需要做调整，项目能够 按照预期运行。比如启动类在根包的路径下，使用了@SpringBooApplication 注解。创建了默认的测试类。controller， service，dao 应该放在根包的子包中。application  
+
+*  ==开箱即用：==Spring Boot 应用无需从 0 开始，使用脚手架创建项目。基础配置已经完成。 集成大部分第三方 库对象，无需配置就能使用。例如在 Spring Boot 项目中使用 MyBatis。可以直接使用 XXXMapper 对象， 调用 方法执行 sql 语句 
+
+* ==** SpringBoot3 最小 jdk17， 支持 17-20 **==
+
+  *  2022 年 11 月 24 日。Spring Boot3 发布，里程碑的重大发布。这个版本应该是未来 5 年的使用主力。Spring 官网支持 Spring Boot3.0.X 版本到 2025 年。 SpringBoot3 中的重大变化： 
+    * 1）JDK 最小 Java 17,能够支持 17-20. 
+    * 2）Spring Boot 3.0 已将所有底层依赖项从 Java EE 迁移到了 Jakarta EE API。原来 javax 开头的包名， 修改为 jakarta。 例如 jakarta.servlet.http.HttpServlet 原来 javax.servlet.http.HttpServlet 
+    * 3）支持 GraalVM 原生镜像。将 Java 应用编译为本机代码，提供显著的内存和启动性能改进。 
+    * 4）对第三方库，更新了版本支持。 
+    * 5）自动配置文件的修改。 
+    * 6）提供新的声明式 Http 服务，在接口方法上声明@HttpExchange 获取 http 远程访问的能力。代替 OpenFeign 
+    * 7）Spring HTTP 客户端提供基于 Micrometer 的可观察性. 跟踪服务，记录服务运行状态等 
+    * 8）AOT（预先编译） 支持 Ahead Of Time，指运行前编译 
+    * 9）Servlet6.0 规范 
+    * 10）支持 Jackson 2.14。 
+    * 11）Spring MVC :默认情况下使用的 PathPatternParser。删除过时的文件和 FreeMarker 、JSP 支持。 伴随着 Spring Boot3 的发布，还有 Spring Framework 6.0 的发布(2022-11-16),先于 Spring Boot 发布
+
+*  脚手架辅助创建程序的工具，Spring Initializr 是创建 Spring Boot 项目的脚手架。快速建立 Spring Boot 项目 的最好方式。他是一个 web 应用，能够在浏览器中使用。IDEA 中继承了此工具，用来快速创建 Spring Boot 项目 以及 Spring Cloud 项目 
+
+  *  Spring Initializr 脚手架的 web 地址： https://start.spring.io/ 
+
+  * 阿里云脚手架：https://start.aliyun.com/
+
+    
+
+    
+
+*  starter 是一组依赖描述，应用中包含 starter，可以获取 spring 相关技术的一站式的依赖和版本。不必复制、 粘粘代码。通过 starter 能够快速启动并运行项目。 starter 包含： 
+
+  * 依赖坐标、版本 
+  * 传递依赖的坐标、版本 
+  * 配置类，配置  
+
+* @SpringBootApplication注解
+
+  * 他有三个注解组成
+
+    ```java
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Documented
+    @Inherited
+    @SpringBootConfiguration
+    @EnableAutoConfiguration
+    @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
+    		@Filter(type = FilterType.CUSTOM, classes = AutoConfigurationExcludeFilter.class) })
+    public @interface SpringBootApplication {
+    ```
+
+    * 点击@SpringBootConfiguration（他标注的类表明是配置类）
+
+      ```java
+      @Target({ElementType.TYPE})
+      @Retention(RetentionPolicy.RUNTIME)
+      @Documented
+      @Configuration
+      @Indexed
+      public @interface SpringBootConfiguration {
+          @AliasFor(
+              annotation = Configuration.class
+          )
+          boolean proxyBeanMethods() default true;
+      }
+      ```
+
+      * @Configuration：javaConfig的功能，配置类：结合@Bean能够将对象注入到spring的IOC容器
+
+      * 程序的入口类（配置类），在项目程序启动的时候，即调用`SpringApplication.run()`时，作为参数传递给了`run()`方法，所以`SpringApplication.run()`的执行需要一个配置类，配置类也称为源，因为SpringBoot项目启动运行的时候，需要通过配置类（源）来加载项目运行所需要的对象，将项目运行所需的对象创建好放到IoC容器中。
+
+        ```java
+        @SpringBootApplication
+        public class Test1Application {
+            public static void main(String[] args) {
+                SpringApplication.run(Test1Application.class, args);
+            }
+        }
+        ```
+
+    * 点击@EnableAutoConfiguration（它是开启自动配置，将spring和第三方的对象创建好，注入到spring容器，避免xiexml，去掉样例代码）
+
+      ```java
+      @Target(ElementType.TYPE)
+      @Retention(RetentionPolicy.RUNTIME)
+      @Documented
+      @Inherited
+      @AutoConfigurationPackage
+      @Import(AutoConfigurationImportSelector.class)
+      public @interface EnableAutoConfiguration 
+      ```
+
+    * @ComponentScan组件扫描器：约定从启动类作为扫描包的根
+
+    * 在三个配置一个是结合@bean让自己定义的都创建对象，一个是自动配置，将第三方软件对象创建好，一个是包扫描，把controller,service等注解标注的创建对象
+
+
+
+* SpringApplication.*run*(Test1Application.**class**, args);返回的就是ApplicationContext的实现类
+
+
+
+* 运行springboot的三种方式
+
+  * 使用开发工具，例如 IDEA 执行SpringBoot项目启动类的 main 方法
+  * 使用 Maven 插件，通过执行 `mvn spring-boot:run` 命令来执行SpringBoot项目
+  * 通过执行JAR包来执行SpringBoot项目，`java -jar jar文件的路径`
+
+* SpringBoot Jar 文件和普通 Jar 文件的区别
+
+   ![image.png](SpringBoot%E5%85%A5%E9%97%A8md.assets/image.png) 
+
+
+
