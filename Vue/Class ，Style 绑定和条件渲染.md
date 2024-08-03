@@ -139,7 +139,8 @@
     ```js
     <body>
         <div id="app">
-            <div class="static small" style="background-color:green ;">{{msg}}</div>
+            //注意，直接写中间的-一定要改为驼峰，并且加单引号
+            <div class="static small" :style="backgroundColor:'green' ;">{{msg}}</div>
             <!-- v-bind可以省略，数组里可以是变量，也可以是字符串 -->
             <div class="static" :class="c1" :style="mystyle">{{msg}}</div>
         </div>
@@ -157,10 +158,10 @@
             })
         </script>
     </body>
-    ```
-
-  * 数组形式
-
+  ```
+  
+* 数组形式
+  
     ```js
     <body>
         <div id="app">
@@ -182,8 +183,8 @@
             })
         </script>
     </body>
-    ```
-
+  ```
+  
     
 
 
