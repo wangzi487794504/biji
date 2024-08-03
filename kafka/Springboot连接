@@ -1,0 +1,138 @@
+#### SpringBoot连接kafka
+
+* 添加依赖
+
+  ```xml
+  <dependency>
+      <groupId>org.springframework.kafka</groupId>
+      <artifactId>spring-kafka</artifactId>
+  </dependency>
+  
+  ```
+
+  
+
+* 增加配置文件
+
+  ```yml
+  spring:
+    kafka:
+      bootstrap-servers: 192.168.11.128:9092
+  
+  ```
+
+  
+
+* 消费者
+
+  ```java
+  @Component
+  public class EventConsumer {
+      //采用监听器监视
+      @KafkaListener(topics = "wang",groupId = "wangzijie1")
+      public  void onEvent(@Payload String event, @Header(value = KafkaHeaders.RECEIVED_TOPIC) String head
+      , Acknowledgment acknowledgment){
+          System.out.println("读取到的消息"+event);
+          //手动确认
+          acknowledgment.acknowledge();
+      }
+      @KafkaListener(groupId = "jie",topics = {"wang"})
+      public void onEvnt2(List<ConsumerRecord<String,String>> records){
+          System.out.println(records.size());
+      }
+  }
+  ```
+
+* 生产者
+
+  ```java
+  @Component
+  public class EventProducer {
+      @Resource
+      private KafkaTemplate<String,String> kafkaTemplate;
+  
+      @Resource
+      private KafkaTemplate<String,Object> kafkaTemplate2;
+      public void sendEvent(){
+          kafkaTemplate.send("wang","hello wang");
+      }
+      //构建器模式
+      public void sendEvent2(){
+          Message message= MessageBuilder.withPayload("AA")
+                  .setHeader(KafkaHeaders.TOPIC, "wang")
+                  .build();
+          kafkaTemplate.send(message);
+      }
+      public void sendEvent3(){
+          Headers headers=new RecordHeaders();
+          headers.add("phone","123456".getBytes(StandardCharsets.UTF_8));
+          ProducerRecord<String,String> producerRecord=new ProducerRecord<>
+                  ("wang", 0,
+                          System.currentTimeMillis(),"k1","hello",headers);
+          kafkaTemplate.send(producerRecord);
+      }
+      public void sendEvent4(){
+          kafkaTemplate.send("wang",0,
+                  System.currentTimeMillis(),"k2","hello");
+      }
+      public void sendEvent5(){
+          //需要在配置文件配置默认的topic
+          CompletableFuture<SendResult<String, String>> completableFuture = kafkaTemplate.sendDefault(0, System.currentTimeMillis(), "k3", "hello");
+          //阻塞等待那结果
+          try {
+              SendResult<String, String> sendResult = completableFuture.get();
+              if (sendResult.getRecordMetadata()!=null){
+                  System.out.println("发送成功");
+              }
+          }catch (Exception e){
+  
+          }
+      }
+      public void sendEvent6(){
+          //需要在配置文件配置默认的topic
+          CompletableFuture<SendResult<String, String>> completableFuture = kafkaTemplate.sendDefault(0, System.currentTimeMillis(), "k3", "hello");
+          //非阻塞等待那结果
+          try {
+              completableFuture.thenAccept
+                      (t->{
+                          if (t.getRecordMetadata()!=null){
+                              System.out.println("发送成功");
+                          }
+                      }).exceptionallyCompose(t->{
+                          t.printStackTrace();
+                          return null;
+              });
+  
+          }catch (Exception e){
+  
+          }
+      }
+      public void sendEvent7(){
+          User user= User.builder().id(1).name("WANG").build();
+          kafkaTemplate2.send("wang",user);
+      }
+  }
+  ```
+
+
+
+* kafka的几个概念
+
+  ![1719847062392](Springboot%E8%BF%9E%E6%8E%A5.assets/1719847062392.png)
+  *  `Partition `是物理上的概念，每个Topic 包含一个或多个Partition。kafka分配的单位是Partition Kafka中，每个topic可以有一个或多个partition；当创建topic时，如果不指定该topic的partition数量，那么默认就是1个partition；
+
+  * `Topic`: 为了使得kafka 的吞吐率可以线性提高，物理上把Topic 分成一个或多个Partition，每个Partition 在物理上对应一个文件夹，该文件夹下存储这个Partition 的所有消息和索引文件。 
+
+  * `Replication-factor`: 表示该Topic 需要再不同的broker 中保存几份，即副本。 
+
+  * `OFF-SET`是标识每个分区中消息的唯一位置，默认从0开始.
+
+  * `Broker`：Kafka集群中包含的服务器，有一个或多个服务器，这种服务器被称为 Broker。
+
+    Broker 端不维护数据的消费状态，提升了性能。直接使用磁盘进行存储，线性读写，速度快。避免了在JVM 内存和系统内存之间的复制，减少耗性能的创建对象和垃圾回收。
+
+  * `Producror`： 负责发布消息到Kafka Broker 
+
+  * `Consumer`： 负责从Broker 拉取（pull）数据并进行处理。 
+
+  * `Comsuner Group`:每个Consumer 属于一个特定的Consumer Group，程序员可为每个Consumer 指定Group name，若不指定group name 则属于默认的group。每条消息只可以被Consumer Goup 组中中的一个Consumer消费，但是可以指定多个Consumer Group。==所以一个消息在Consumer Group 里面只可以被消费一次。==
