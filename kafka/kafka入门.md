@@ -23,15 +23,31 @@
 
 * 创建主题topic
 
-  * 主题（Topic）类似于文件系统中的文件夹；
+  * 主题（Topic）类似于文件系统中的文件夹；主题（Topic）用于存储事件（Events）
 
-    主题（Topic）用于存储事件（Events）
+    
 
-    事件（Events）也称为记录或消息，比如支付交易、手机地理位置更新、运输订单、物联网设备或医疗设备的传感器测量数据等等都是事件（Events）；
+  * 事件（Events）也称为记录或消息，比如支付交易、手机地理位置更新、运输订单、物联网设备或医疗设备的传感器测量数据等等都是事件（Events）；
 
     事件（Events）被组织和存储在主题（Topic）中
 
     简单来说，主题（Topic）类似于文件系统中的文件夹，事件（Events）是该文件夹中的文件
+
+  * Broker：Kafka集群中包含的服务器，有一个或多个服务器，这种服务器被称为 Broker。
+
+    * Broker 端不维护数据的消费状态，提升了性能。直接使用磁盘进行存储，线性读写，速度快。避免了在JVM 内存和系统内存之间的复制，减少耗性能的创建对象和垃圾回收。
+
+  * Producer：负责发布消息到Kafka Broker
+
+  * Consumer：负责从Broker 拉取（pull）数据并进行处
+
+  *  Partition： 是物理上的概念，每个Topic 包含一个或多个Partition。kafka分配的单位是Partition 
+
+  * Consumer Group：==每个Consumer 属于一个特定的Consumer Group，可为每个Consumer 指定Group name，若不指定group name 则属于默认的group。每条消息只可以被Consumer Goup 组中中的一个Consumer消费，但是可以指定多个Consumer Group，所以一个消息在Consumer Group 里面只可以被消费一次。==
+
+  * ##### Topic & Partition：Topic 在kafka可以被认为是一个 queue，每发送一条消息必须指定它的Topic，可以简单理解为必须指明把这条消息放入到哪个queue里。为了使得kafka 的吞吐率可以线性提高，物理上把Topic 分成一个或多个Partition，每个Partition 在物理上对应一个文件夹，该文件夹下存储这个Partition 的所有消息和索引文件。若创建 Topic1 和Topic2 两个Topic，且分别有13个和19个分区，则整个集群上相应会生成共32个文件夹
+
+  * ##### Replication-factor： 表示该Topic 需要再不同高德broker 中保存几分 
 
 * 创建主题使用的命令
 

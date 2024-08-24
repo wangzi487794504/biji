@@ -6,13 +6,13 @@
 
   * Nacos: 一个更易于构建云原生应用的动态服务发现、配置管理和服务管理平台。
 
-  * RocketMQ:-款开源的分布式消息系统， 基于高可用分布式集群技术,提供低延时的、可靠的消息发布与订阅服务。
+  * RocketMQ：一款开源的分布式消息系统， 基于高可用分布式集群技术,提供低延时的、可靠的消息发布与订阅服务。
 
   * Seata: 阿里巴巴开源产品，一个易于使用的高性能微服务分布式事务解决方案。
 
   * Alibaba Cloud OSS:阿里云对象存储服务(Object Storage Service,简称OSS) ,是阿里云提供的海量、安全、低成本、高可靠的云存储服务。您可以在任何应用、任何时间、任何地点存储和访问任意类型的数据。
 
-  * Alibaba Cloud SchedulerX:阿里中间件团队开发的一款分布式任务调度产品，提供秒级、精准、高可靠、高可用的定时(基于Cron表达式)任务调度服务。
+  * Alibaba Cloud SchedulerX：阿里中间件团队开发的一款分布式任务调度产品，提供秒级、精准、高可靠、高可用的定时(基于Cron表达式)任务调度服务。
 
   * Alibaba Cloud SMS:覆盖全球的短信服务,友好高效、智能的互联化通讯能力,帮助企业迅速搭建客户触达通道。
 
@@ -213,5 +213,26 @@
       
 
 * NameSpace
-  *  用于进行租户粒度的配置隔离。不同的命名空间下，可以存在相同的 Group 或 Data ID 的配置。
-  * Namespace 的常用场景之一是不同环境的配置的区分隔离， 例如开发测试环境和生产环境的资源（如配置、服务）隔离等。 在没有明确指定 ${spring.cloud.nacos.config.namespace} 配置的情况下， 默认使用的是 Nacos 中 public 命名空间即默认的命名空间。如果需要使用自定义的命名空间，可以通过以下配置来实现： 
+  * 用于进行租户粒度的配置隔离。不同的命名空间下，可以存在相同的 Group 或 Data ID 的配置。
+  
+  * Namespace 的常用场景之一是不同环境的配置的区分隔离， 例如开发测试环境和生产环境的资源（如配置、服务）隔离等。 在没有明确指定 ${spring.cloud.nacos.config.namespace} 配置的情况下， 默认使用的是 Nacos 中 public 命名空间即默认的命名空间。如果需要使用自定义的命名空间，可以通过以下配置来实现：
+  
+    
+  
+    docker run -p 9000:9000 -p 9090:9090 --net=host --name minio -d --restart=always \
+    -e "MINIO_ACCESS_KEY=root" \
+    -e "MINIO_SECRET_KEY=wzj123456" \
+    -e "MINIO_SERVER_URL=http://43.138.181.125:9000" \
+    -v /data:/data minio/minio server /data --console-address ":9001" -address ":9000" 
+  
+*  nacos.discovery.enabled: 开启服务的**注册与发现**功能; @EnableDiscoveryClient(autoRegister = true); 开启服务自动注册功能,项目启动后能在nacos的web端界面看到服务的相关信息,并且具备拉取服务信息的功能(前提是nacos.discovery.enabled不为false)
+
+* @EnableDiscoveryClient(autoRegister = false); 关闭服务自动注册功能, 项目启动后nacos的web端界面没有此项目的信息,但是依然具备拉取服务信息的功能(前提是nacos.discovery.enabled不为false)
+
+   
+
+   * 不配置@EnableDiscoveryClient,不配置nacos.discovery.enable	具有服务自动注册功能,具有拉取服务信息功能
+   * 不配置@EnableDiscoveryClient,配置nacos.discovery.enable=false	服务注册与拉取服务信息功能都不具备
+   * 配置@EnableDiscoveryClient(autoRegister=false),配置nacos.discovery.enable=true	不具有服务注册功能,具有拉取服务信息功能
+   * 配置@EnableDiscoveryClient(autoRegister=false),配置nacos.discovery.enable=false	服务注册与拉取服务信息功能都不具备
+     
