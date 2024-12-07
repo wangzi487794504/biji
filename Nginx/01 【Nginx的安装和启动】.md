@@ -28,8 +28,8 @@ Nginx (engine x) 是一个高性能的HTTP和反向代理web服务器，同时�
 
 1. 修改配置网卡配置文件
    `vi /etc/sysconfig/network-scripts/ifcfg-ens33`
-   ![image-20220815204909611](https://i0.hdslb.com/bfs/album/a414c7903674fcdaf58a3f3e8ab13725f9a4b2ae.png)
-   ![image-20220815204852826](https://i0.hdslb.com/bfs/album/46b13351b7f4804b7dd921392fe0114aedd6685d.png)
+   <img src="https://i0.hdslb.com/bfs/album/a414c7903674fcdaf58a3f3e8ab13725f9a4b2ae.png" alt="image-20220815204909611" style="zoom:67%;" />
+   <img src="https://i0.hdslb.com/bfs/album/46b13351b7f4804b7dd921392fe0114aedd6685d.png" alt="image-20220815204852826" style="zoom:67%;" />
 
    ​		一些公网DNS服务器
 
@@ -79,9 +79,7 @@ Nginx (engine x) 是一个高性能的HTTP和反向代理web服务器，同时�
 
 安装到`usr/local/nginx`路径下
 
-安装成功页面
-
-![image-20220823105715862](https://i0.hdslb.com/bfs/album/fc186b1f589af06a28f218ce03d6fe77be8e0710.png)
+<img src="https://i0.hdslb.com/bfs/album/fc186b1f589af06a28f218ce03d6fe77be8e0710.png" alt="image-20220823105715862" style="zoom:67%;" />
 
 **但遇到报错，需要安装以下环境**  
 
@@ -153,7 +151,7 @@ make install
 
 **访问服务器ip**
 
-![image-20220823110253824](https://i0.hdslb.com/bfs/album/51b9498b820979d41768cd430e6738d4a0bbdfab.png)
+<img src="https://i0.hdslb.com/bfs/album/51b9498b820979d41768cd430e6738d4a0bbdfab.png" alt="image-20220823110253824" style="zoom:50%;" />
 
 ## 6.安装成系统服务，开机自启
 

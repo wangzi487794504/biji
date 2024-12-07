@@ -112,7 +112,7 @@
 
     * 根本的原因在于：这种方式可以做到将“实例化Bean”和“给Bean属性赋值”这两个动作分开去完成。
 
-  * ==实例化Bean的时候：调用无参数构造方法来完成。**此时可以先不给属性赋值，可以提前将该Bean对象“曝光”给外界。**==
+  * ==实例化Bean的时候：调用无参数构造方法来完成。**此时可以先不给属性赋值，可以提前将该Bean对象“曝光”给外界。**== 
 
   * 给Bean属性赋值的时候：调用setter方法来完成。
 
@@ -122,8 +122,45 @@
 
     
 
+    ```java
+    	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+    		// Quick check for existing instance without full singleton lock
+            //获取单例模式,如果找到赋值给 singletonObject
+    		Object singletonObject = this.singletonObjects.get(beanName);
+            //检查 singletonObject 是否为 null，并且该 Bean 是否正在创建中（可能意味着是循环依赖情况）
+    		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
+                //如果 singletonObject 仍为 null，尝试从 earlySingletonObjects 中获取该 Bean 的早期引用（提前创建的实例）
+    			singletonObject = this.earlySingletonObjects.get(beanName);
+                //如果仍然没有找到对象，并且 allowEarlyReference 为 true 允许提前引用，则进入下面的同步块。
+    			if (singletonObject == null && allowEarlyReference) {
+                    //再次尝试从 singletonObjects 中获取单例对象，以防在等待时已经有其他线程创建了它
+                    
+    				synchronized (this.singletonObjects) {
+    					// Consistent creation of early reference within full singleton lock
+    					singletonObject = this.singletonObjects.get(beanName);
+    					if (singletonObject == null) {
+                            ////如果还是没有找到，继续检查
+    						singletonObject = this.earlySingletonObjects.get(beanName);
+    						if (singletonObject == null) {
+    							ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
+    							if (singletonFactory != null) {
+                                    //从 singletonFactories 中获取单例工厂（ObjectFactory），这是用于创建 Bean 的工厂接口。
+    								singletonObject = singletonFactory.getObject();
+                                    //将新创建的单例对象放入 earlySingletonObjects 中，允许后续的引用。
+    								this.earlySingletonObjects.put(beanName, singletonObject);
+    								this.singletonFactories.remove(beanName);
+    							}
+    						}
+    					}
+    				}
+    			}
+    		}
+    		return singletonObject;
+    	}
+    ```
     
-
+    
+    
     
 
 ##### 反射机制

@@ -50,13 +50,13 @@ HTTP是一个应用层协议，由请求和响应构成，是一个标准的客�
 
 HTTP协议通常承载于TCP协议之上，有时也承载于TLS或SSL协议层之上，这个时候，就成了我们常说的HTTPS。如下图所示：
 
-![image-20220823112632146](https://i0.hdslb.com/bfs/album/cad7e4d03f01d64a1f8c0e5e841030b0c9fbd26b.png)
+<img src="https://i0.hdslb.com/bfs/album/cad7e4d03f01d64a1f8c0e5e841030b0c9fbd26b.png" alt="image-20220823112632146" style="zoom:67%;" />
 
 客户端与服务器的数据交互的流程：
 
 1）首先客户机与服务器需要建立TCP连接。只要单击某个超级链接，HTTP的工作开始，下图是TCP连接流程。
 
-![image-20220823112651941](https://i0.hdslb.com/bfs/album/6d258d5fe8ebfeebbc20ef86409e20cf10704801.png)
+<img src="https://i0.hdslb.com/bfs/album/6d258d5fe8ebfeebbc20ef86409e20cf10704801.png" alt="image-20220823112651941" style="zoom:67%;" />
 
 2）建立连接后，客户机发送一个请求给服务器，请求方式的格式为：统一资源标识符（URL）、协议版本号，后边是MIME信息包括请求修饰符、客户机信息和可能的内容。
 

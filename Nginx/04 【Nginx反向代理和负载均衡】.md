@@ -119,7 +119,7 @@ font-family: Tahoma, Verdana, Arial, sans-serif; }
 
 103的nginx.cfg
 
-```bash
+```conf
 worker_processes  1;
 
 

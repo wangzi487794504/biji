@@ -187,7 +187,7 @@ EventLoop 本质是一个单线程执行器（同时维护了一个 Selector）�
 
 它的继承关系比较复杂
 
-* 一条线是继承自 j.u.c.ScheduledExecutorService 因此包含了线程池中所有的方法
+* 一条线是继承自 juc.ScheduledExecutorService 因此包含了线程池中所有的方法
 * 另一条线是继承自 netty 自己的 OrderedEventExecutor，
   * 提供了 boolean inEventLoop(Thread thread) 方法判断一个线程是否属于此 EventLoop
   * 提供了 parent 方法来看看自己属于哪个 EventLoopGroup
@@ -239,7 +239,7 @@ for (EventExecutor eventLoop : group) {
 
 输出
 
-```
+```java
 io.netty.channel.DefaultEventLoop@60f82f98
 io.netty.channel.DefaultEventLoop@35f983a6
 ```
@@ -1369,7 +1369,7 @@ ByteBuf 由四部分组成，最大容量是是整数的最大值
 
 ![](img/0010.png)
 
-最开始读写指针都在 0 位置
+* 最开始读写指针都在 0 位置
 
 
 

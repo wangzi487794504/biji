@@ -4,7 +4,7 @@
 
 *  ==约定优于配置：==Spring Boot 定义了常用类，包的位置和结构，默认的设置。代码不需要做调整，项目能够 按照预期运行。比如启动类在根包的路径下，使用了@SpringBooApplication 注解。创建了默认的测试类。controller， service，dao 应该放在根包的子包中。application  
 
-*  ==开箱即用：==Spring Boot 应用无需从 0 开始，使用脚手架创建项目。基础配置已经完成。 集成大部分第三方 库对象，无需配置就能使用。例如在 Spring Boot 项目中使用 MyBatis。可以直接使用 XXXMapper 对象， 调用 方法执行 sql 语句 
+*  ==开箱即用：==Spring Boot 应用无需从 0 开始，使用脚手架创建项目。基础配置已经完成。 集成大部分第三方库对象，无需配置就能使用。例如在 Spring Boot 项目中使用 MyBatis。可以直接使用 XXXMapper 对象， 调用 方法执行 sql 语句 
 
 * ==** SpringBoot3 最小 jdk17， 支持 17-20 **==
 
@@ -31,10 +31,10 @@
 
     
 
-*  starter 是一组依赖描述，应用中包含 starter，可以获取 spring 相关技术的一站式的依赖和版本。不必复制、 粘粘代码。通过 starter 能够快速启动并运行项目。 starter 包含： 
+*  starter 是一组依赖描述，应用中包含 starter，可以获取 spring 相关技术的一站式的依赖和版本。不必复制、 粘粘代码。通过 starter 能够快速启动并运行项目。 starter 包含： 
 
-  * 依赖坐标、版本 
-  * 传递依赖的坐标、版本 
+  * 依赖坐标、版本 
+  * 传递依赖的坐标、版本 
   * 配置类，配置  
 
 * @SpringBootApplication注解
@@ -82,7 +82,7 @@
         }
         ```
 
-    * 点击@EnableAutoConfiguration（它是开启自动配置，将spring和第三方的对象创建好，注入到spring容器，避免xiexml，去掉样例代码）
+    * 点击@EnableAutoConfiguration（它是开启自动配置，将spring和第三方的对象创建好，注入到spring容器，避免写xml，去掉样例代码）
 
       ```java
       @Target(ElementType.TYPE)
