@@ -79,6 +79,20 @@
 
 * 使用的是双向链表
 
+  ```java
+  public class LinkedList<E>
+      extends AbstractSequentialList<E>
+      implements List<E>, Deque<E>, Cloneable, java.io.Serializable
+  {
+    //...
+  }
+  ```
+
+  * `List` : 表明它是一个列表，支持添加、删除、查找等操作，并且可以通过下标进行访问。
+  * `Deque` ：继承自 `Queue` 接口，具有双端队列的特性，支持从两端插入和删除元素，方便实现栈和队列等数据结构。
+  * `Cloneable` ：表明它具有拷贝能力，可以进行深拷贝或浅拷贝操作。
+  * `Serializable` : 表明它可以进行序列化操作，也就是可以将对象转换为字节流进行持久化存储或网络传输，非常方便。
+
 * 不需要考虑扩容问题
 
 * 代码
@@ -135,5 +149,7 @@
   
 
 * Vector基本不用
+
 * ArrayList使用数组结构，查找和添加的效率高，时间复杂度为o(1)，删除和插入操作效率低，复杂度为o(n)
+
 * LinkedList插入和删除效率高，采用双向链表，为0(1)，查找和添加的效率低，为o(n)

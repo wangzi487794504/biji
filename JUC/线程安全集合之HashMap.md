@@ -36,8 +36,10 @@
 
 * JDK的ConCurrentHashMap原理
 
-  * 重要属性和内部类
+  * Java 7 中 `ConcurrentHashMap` 的存储结构如上图，`ConcurrnetHashMap` 由很多个 `Segment` 组合，而每一个 `Segment` 是一个类似于 `HashMap` 的结构，所以每一个 `HashMap` 的内部可以进行扩容。但是 `Segment` 的个数一旦**初始化就不能改变**，默认 `Segment` 的个数是 16 个，你也可以认为 `ConcurrentHashMap` 默认支持最多 16 个线程并发。
 
+  * 重要属性和内部类
+  
     ```java
     // 默认为 0
     // 当初始化时, 为 -1
@@ -74,7 +76,7 @@
     * ForwardingNode用来旧的站位，如果此时有查询先查找旧的，发现旧的里面是ForwardingNode，就会去新的里面查找
 
   * 重要方法
-
+  
     ```java
     // 获取 Node[] 中第 i 个 Node
     static final <K,V> Node<K,V> tabAt(Node<K,V>[] tab, int i)
@@ -87,7 +89,7 @@
     ```
 
   * 构造器分析（可以看到实现了懒惰初始化，在构造方法中仅仅计算了 table 的大小，以后在第一次使用时才会真正创建）
-
+  
     ```java
     //初始容量，加载因子，并发量
     public ConcurrentHashMap(int initialCapacity, float loadFactor, int concurrencyLevel) {
@@ -104,8 +106,21 @@
     }
     ```
 
+    * 执行流程
+      * 必要参数校验。
+  
+      * 校验并发级别 `concurrencyLevel` 大小，如果大于最大值，重置为最大值。无参构造**默认值是 16.**
+  
+      * 寻找并发级别 `concurrencyLevel` 之上最近的 **2 的幂次方**值，作为初始化容量大小，**默认是 16**。
+  
+      * 记录 `segmentShift` 偏移量，这个值为【容量 = 2 的 N 次方】中的 N，在后面 Put 时计算位置时会用到。**默认是 32 - sshift = 28**.
+  
+      * 记录 `segmentMask`，默认是 ssize - 1 = 16 -1 = 15.
+  
+      * **初始化 `segments[0]`**，**默认大小为 2**，**负载因子 0.75**，**扩容阀值是 2\*0.75=1.5**，插入第二个值时才会进行扩容。
+  
   * get性能
-
+  
     ```java
     public V get(Object key) {
         Node<K,V>[] tab; Node<K,V> e, p; int n, eh; K ek;
@@ -131,9 +146,9 @@
         return null;
     }
     ```
-
+  
   * put流程
-
+  
     ```java
     public V put(K key, V value) {
         //false就是新值可以覆盖map
@@ -308,7 +323,7 @@
         }
     }
     ```
-    
+  
     ```java
     // check 是之前 binCount 的个数
     private final void addCount(long x, int check) {
@@ -362,9 +377,9 @@
         }
     }
     ```
+  
     
-    
-    
+  
   * size的计算流程
   
     * size 计算实际发生在 put，remove 改变集合元素的操作之中 
@@ -409,4 +424,5 @@
       - get，无锁操作仅需要保证可见性，扩容过程中 get 操作拿到的是 ForwardingNode 它会让 get 操作在新 table 进行搜索 
       - 扩容，扩容时以 bin 为单位进行，需要对 bin 进行 synchronized，但这时妙的是其它竞争线程也不是无事可做，它们会帮助把其它 bin 进行扩容，扩容时平均只有 1/6 的节点会把复制到新 table 中 
       - size，元素个数保存在 baseCount 中，并发时的个数变动保存在 CounterCell[] 当中。最后统计数量时累加即可。
+  
 
