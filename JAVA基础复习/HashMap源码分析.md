@@ -155,3 +155,89 @@
   ```
 
   
+
+#### LinkedHashedMap
+
+* `LinkedHashMap` 是 Java 提供的一个集合类，它继承自 `HashMap`，并在 `HashMap` 基础上维护一条双向链表，使得具备如下特性:
+
+  * 支持遍历时会按照插入顺序有序进行迭代。
+
+  * 支持按照元素访问顺序排序,适用于封装 LRU 缓存工具。
+
+  * 因为内部使用双向链表维护各个节点，所以遍历时的效率和元素个数成正比，相较于和容量成正比的 HashMap 来说，迭代效率会高很多。
+
+    ```java]
+    public class LinkedHashMap<K,V>
+        extends HashMap<K,V>
+        implements Map<K,V>
+    {
+    ```
+
+    
+
+* `LinkedHashMap` 逻辑结构如下图所示，它是在 `HashMap` 基础上在各个节点之间维护一条双向链表，使得原本散列在不同 bucket 上的节点、链表、红黑树有序关联起来。
+
+  <img src="./assets/linkhashmap-structure-overview.png" alt="LinkedHashMap 逻辑结构" style="zoom:50%;" />
+
+* 插入顺序遍历和访问顺序遍历
+
+  * `LinkedHashMap` 的迭代顺序是和插入顺序一致的,这一点是 `HashMap` 所不具备的
+
+  * 如果想实现LRU，可以使用LinkedHashMap的构造方法将accessOrder设为true
+
+    ```java
+        public LinkedHashMap(int initialCapacity,
+                             float loadFactor,
+                             boolean accessOrder) {
+            super(initialCapacity, loadFactor);
+            this.accessOrder = accessOrder;
+        }
+    ```
+
+    * 实现LRU
+
+      * 重写`removeEldestEntry` 方法，该方法会返回一个 boolean 值，告知 `LinkedHashMap` 是否需要移除链表首元素（缓存容量有限）。
+
+      ```java
+      public class LRUCache<K, V> extends LinkedHashMap<K, V> {
+          private final int capacity;
+      
+          public LRUCache(int capacity) {
+              super(capacity, 0.75f, true);
+              this.capacity = capacity;
+          }
+      
+          /**
+           * 判断size超过容量时返回true，告知LinkedHashMap移除最老的缓存项(即链表的第一个元素)
+           */
+          @Override
+          protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+              return size() > capacity;
+          }
+      }
+      ```
+
+* LinkedHashMap 是在 HashMap 的基础上为 bucket 上的每一个节点建立一条双向链表，这就使得转为红黑树的树节点也需要具备双向链表节点的特性，即每一个树节点都需要拥有两个引用存储前驱节点和后继节点的地址,所以对于树节点类 TreeNode 的设计就是一个比较棘手的问题。
+
+  * `LinkedHashMap` 的节点内部类 `Entry` 基于 `HashMap` 的基础上，增加 `before` 和 `after` 指针使节点具备双向链表的特性。
+  * `HashMap` 的树节点 `TreeNode` 继承了具备双向链表特性的 `LinkedHashMap` 的 `Entry`。
+
+* get方法
+
+  ```java
+  public V get(Object key) {
+       Node < K, V > e;
+       //获取key的键值对,若为空直接返回
+       if ((e = getNode(hash(key), key)) == null)
+           return null;
+       //若accessOrder为true，则调用afterNodeAccess将当前元素移到链表末尾
+       if (accessOrder)
+           afterNodeAccess(e);
+       //返回键值对的值
+       return e.value;
+   }
+  ```
+
+* 总结：
+
+* `LinkedHashMap` 是 Java 集合框架中 `HashMap` 的一个子类，它继承了 `HashMap` 的所有属性和方法，并且在 `HashMap` 的基础重写了 `afterNodeRemoval`、`afterNodeInsertion`、`afterNodeAccess` 方法。使之拥有顺序插入和访问有序的特性。

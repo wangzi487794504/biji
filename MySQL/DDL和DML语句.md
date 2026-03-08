@@ -252,3 +252,10 @@
     ```
 
   * 如果没有更新条件(即where条件)的话，所有记录全部更新。
+  
+* 窗口函数
+
+  * 他不像聚合函数这样把分组的合并在一行中，他每行都会显示，把聚合的单独加到新的一列（第一行只包含自己，第二行包含1，2。第三行包含123）。
+  * window_function OVER (PARTITION BY .....      ORDER BY   .....    frame_clause)
+  * window_function 是函数名，PARTITION BY 用于定义分区，作用类似于从查询语句的Group by ,如果指定了他们，就会按照每个分区单独进行分析。ORDER BY就是排序
+  * frame_clause可以让我们指定窗口的大小

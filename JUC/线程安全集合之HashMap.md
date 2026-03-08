@@ -38,6 +38,8 @@
 
   * Java 7 中 `ConcurrentHashMap` 的存储结构如上图，`ConcurrnetHashMap` 由很多个 `Segment` 组合，而每一个 `Segment` 是一个类似于 `HashMap` 的结构，所以每一个 `HashMap` 的内部可以进行扩容。但是 `Segment` 的个数一旦**初始化就不能改变**，默认 `Segment` 的个数是 16 个，你也可以认为 `ConcurrentHashMap` 默认支持最多 16 个线程并发。
 
+  * Java8 的 ConcurrentHashMap 相对于 Java7 来说变化比较大，不再是之前的 **Segment 数组 + HashEntry 数组 + 链表**，而是 **Node 数组 + 链表 / 红黑树**。当冲突链表达到一定长度时，链表会转换成红黑树。
+  
   * 重要属性和内部类
   
     ```java
@@ -74,7 +76,7 @@
     ![1722566506234](%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E9%9B%86%E5%90%88%E4%B9%8BHashMap.assets/1722566506234.png)
 
     * ForwardingNode用来旧的站位，如果此时有查询先查找旧的，发现旧的里面是ForwardingNode，就会去新的里面查找
-
+  
   * 重要方法
   
     ```java
@@ -87,7 +89,7 @@
     // 直接修改 Node[] 中第 i 个 Node 的值, v 为新值
     static final <K,V> void setTabAt(Node<K,V>[] tab, int i, Node<K,V> v)
     ```
-
+  
   * 构造器分析（可以看到实现了懒惰初始化，在构造方法中仅仅计算了 table 的大小，以后在第一次使用时才会真正创建）
   
     ```java
@@ -105,7 +107,7 @@
         this.sizeCtl = cap; 
     }
     ```
-
+  
     * 执行流程
       * 必要参数校验。
   
@@ -118,6 +120,42 @@
       * 记录 `segmentMask`，默认是 ssize - 1 = 16 -1 = 15.
   
       * **初始化 `segments[0]`**，**默认大小为 2**，**负载因子 0.75**，**扩容阀值是 2\*0.75=1.5**，插入第二个值时才会进行扩容。
+  
+      * 确定哪个Segment，hash 值无符号右移 28位（初始化时获得），然后与 segmentMask=15 做与运算。
+  
+  * 1.8的初始化
+  
+    ```java
+    /**
+     * Initializes table, using the size recorded in sizeCtl.
+     */
+    private final Node<K,V>[] initTable() {
+        Node<K,V>[] tab; int sc;
+        while ((tab = table) == null || tab.length == 0) {
+            //　如果 sizeCtl < 0 ,说明另外的线程执行CAS 成功，正在进行初始化。
+            if ((sc = sizeCtl) < 0)
+                // 让出 CPU 使用权
+                Thread.yield(); // lost initialization race; just spin
+            else if (U.compareAndSwapInt(this, SIZECTL, sc, -1)) {
+                try {
+                    if ((tab = table) == null || tab.length == 0) {
+                        int n = (sc > 0) ? sc : DEFAULT_CAPACITY;
+                        @SuppressWarnings("unchecked")
+                        Node<K,V>[] nt = (Node<K,V>[])new Node<?,?>[n];
+                        table = tab = nt;
+                        sc = n - (n >>> 2);
+                    }
+                } finally {
+                    sizeCtl = sc;
+                }
+                break;
+            }
+        }
+        return tab;
+    }
+    ```
+  
+    * 从源码中可以发现 ConcurrentHashMap 的初始化是通过自旋和 CAS 操作完成的。里面需要注意的是变量 sizeCtl （sizeControl 的缩写），它的值决定着当前的初始化状态。
   
   * get性能
   
@@ -378,10 +416,50 @@
     }
     ```
   
-    
+  * 初始化Segement流程
+  
+    ```java
+    @SuppressWarnings("unchecked")
+    private Segment<K,V> ensureSegment(int k) {
+        final Segment<K,V>[] ss = this.segments;
+        long u = (k << SSHIFT) + SBASE; // raw offset
+        Segment<K,V> seg;
+        // 判断 u 位置的 Segment 是否为null
+        if ((seg = (Segment<K,V>)UNSAFE.getObjectVolatile(ss, u)) == null) {
+            Segment<K,V> proto = ss[0]; // use segment 0 as prototype
+            // 获取0号 segment 里的 HashEntry<K,V> 初始化长度
+            int cap = proto.table.length;
+            // 获取0号 segment 里的 hash 表里的扩容负载因子，所有的 segment 的 loadFactor 是相同的
+            float lf = proto.loadFactor;
+            // 计算扩容阀值
+            int threshold = (int)(cap * lf);
+            // 创建一个 cap 容量的 HashEntry 数组
+            HashEntry<K,V>[] tab = (HashEntry<K,V>[])new HashEntry[cap];
+            if ((seg = (Segment<K,V>)UNSAFE.getObjectVolatile(ss, u)) == null) { // recheck
+                // 再次检查 u 位置的 Segment 是否为null，因为这时可能有其他线程进行了操作
+                Segment<K,V> s = new Segment<K,V>(lf, threshold, tab);
+                // 自旋检查 u 位置的 Segment 是否为null
+                while ((seg = (Segment<K,V>)UNSAFE.getObjectVolatile(ss, u))
+                       == null) {
+                    // 使用CAS 赋值，只会成功一次
+                    if (UNSAFE.compareAndSwapObject(ss, u, null, seg = s))
+                        break;
+                }
+            }
+        }
+        return seg;
+    }
+    ```
+  
+    * 检查计算得到的位置的 `Segment` 是否为 null。
+    * 为 null 继续初始化，使用 `Segment[0]` 的容量和负载因子创建一个 `HashEntry` 数组。
+    * 再次检查计算得到的指定位置的 `Segment` 是否为 null。
+    * 使用创建的 `HashEntry` 数组初始化这个 Segment。
+    * 自旋判断计算得到的指定位置的 `Segment` 是否为 null，使用 CAS 在这个位置赋值为 `Segment`。
   
   * size的计算流程
   
+    * `ConcurrentHashMap` 的扩容只会扩容到原来的两倍。老数组里的数据移动到新的数组时，位置要么不变，要么变为 `index+ oldSize`，参数里的 node 会在扩容之后使用链表**头插法**插入到指定位置。
     * size 计算实际发生在 put，remove 改变集合元素的操作之中 
   
       - 没有竞争发生，向 baseCount 累加计数 
